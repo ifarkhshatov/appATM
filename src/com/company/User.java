@@ -165,4 +165,27 @@ public class User {
     public void addAcctTransaction(int acctIdx, double amount, String  memo) {
         this.accounts.get(acctIdx).addTransaction(amount, memo);
     }
+    /*
+    * Add the transaction to account of the another owner
+    * @param acctUUID           UUID where to transfer
+    * @param amount             Amount to transfer
+    * @param memo               the memo of the transaction
+    * */
+    public void  addAcctTransaction(String acctUUID, double amount, String memo) {
+       for (Account a :  this.accounts.get(0).getBankOwner().getAccounts()) {
+           if (a.getUUID().compareTo(acctUUID) == 0) {
+               a.addTransaction(amount, memo);
+           }
+       }
+    }
+
+    /*
+    * Check does the account exists in bank
+    * @param acctUUID       account to check
+    * @return               exists account or not in the bank
+    * */
+
+    public boolean accountExistsInBank(String acctUUID) {
+        return this.accounts.get(0).getBankOwner().existsUUID(acctUUID);
+    }
 }

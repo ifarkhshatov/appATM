@@ -11,6 +11,8 @@ public class Account {
     private User holder;
     // the list of transactions for this account
     private ArrayList<Transaction> transactions;
+    // the bank owner
+    private Bank bankOwner;
 
     /*
      * Create a new Account:
@@ -19,6 +21,7 @@ public class Account {
      * @param theBank the bank that issues the account
      * */
     public Account(String name, User holder, Bank theBank) {
+        this.bankOwner = theBank;
         // set the account name and holder
         this.name = name;
         this.holder = holder;
@@ -29,6 +32,16 @@ public class Account {
         this.transactions = new ArrayList<Transaction>();
 
     }
+
+    /*
+     * Return Bank owner of the account
+     * @return       Bank object
+     *
+     * */
+    public Bank getBankOwner() {
+        return bankOwner;
+    }
+
     /*
      * Return the account's UUID
      * @return the uuid
@@ -36,39 +49,48 @@ public class Account {
     public String getUUID() {
         return uuid;
     }
-/*
-* Get summary line for the account
-*@return the string summary
-* */
-    public String getSummaryLine(){
+
+    /*
+     * Get summary line for the account
+     *@return the string summary
+     * */
+    public String getSummaryLine() {
         // get the account's balance
         double balance = this.getBalance();
 
         // format the summary line, depending on whether the balance is overdraft
-        if (balance >=0) {
+        if (balance >= 0) {
             return String.format("%s : %.02f EUR : %s", this.uuid, balance, this.name); //two digits after zero
         } else {
             return String.format("%s : (%.02f) EUR : %s", this.uuid, balance, this.name); //two digits after zero
         }
     }
-    public double getBalance(){
+
+    public double getBalance() {
         double balance = 0;
-        for (Transaction t: this.transactions) {
+        for (Transaction t : this.transactions) {
             balance += t.getAmount();
         }
         return balance;
     }
-/*
-* Print the transaction history of the account
-* */
+
+    /*
+     * Print the transaction history of the account
+     * */
     public void printTransHistory() {
         System.out.printf("\nTransaction history for account %s\n", this.uuid);
-        for(int t = this.transactions.size()-1; t >= 0; t--) {
+        for (int t = this.transactions.size() - 1; t >= 0; t--) {
             System.out.println(this.transactions.get(t).getSummaryLine());
         }
 //        System.out.println();
     }
 
+
+    /*
+    * Add the transaction with memo to this account
+    * @param amount         the amount of transaction
+    * @param memo           the memo of the transaction
+    * */
     public void addTransaction(double amount, String memo) {
         // create new transaction object and add it to our list
         Transaction newTrans = new Transaction(amount, memo, this);
