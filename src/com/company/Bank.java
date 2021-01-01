@@ -146,6 +146,21 @@ public class Bank {
         return null;
     }
 
+    /*
+    * Return does the UUID exists in the Bank
+    * @param  acctUUID      UUID to check validity
+    * @return               exists or not
+    * */
+    public boolean existsUUID(String acctUUID) {
+        for(Account a: accounts) {
+            if (a.getUUID().equals(acctUUID)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-
+    public ArrayList<Account> getAccounts() {
+        return accounts;
+    }
 }

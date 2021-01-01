@@ -1,5 +1,6 @@
 package com.company;
 
+import java.sql.Struct;
 import java.util.Scanner;
 
 public class ATM {
@@ -11,11 +12,16 @@ public class ATM {
 
         //add user, which also creates a savings account
         User aUser = theBank.addUser("Mike", "Scot", "1234");
+        User bUser = theBank.addUser("Jake", "Scot", "1234");
 
         //add a checking account for our user
-        Account newAccount = new Account("Checking", aUser, theBank);
-        aUser.addAccount(newAccount);
-        theBank.addAccount(newAccount);
+        Account newAccount1 = new Account("Checking", aUser, theBank);
+        aUser.addAccount(newAccount1);
+        theBank.addAccount(newAccount1);
+
+        Account newAccount2 = new Account("Checking", bUser, theBank);
+        bUser.addAccount(newAccount2);
+        theBank.addAccount(newAccount2);
 
 
         // login
@@ -77,15 +83,16 @@ public class ATM {
             System.out.println("2) Withdrawal.");
             System.out.println("3) Deposit");
             System.out.println("4) Transfer");
+            System.out.println("6) Transfer between user");
             System.out.println("5) Quit");
             System.out.println("\n");
             System.out.print("Enter choice: ");
             choice = sc.nextInt();
 
-            if (choice < 1 || choice > 5) {
+            if (choice < 1 || choice > 6) {
                 System.out.println("Invalid choice. Please choose 1-5");
             }
-        } while (choice < 1 || choice > 5);
+        } while (choice < 1 || choice > 6);
         // process the choice
 
         switch (choice) {
@@ -105,6 +112,8 @@ public class ATM {
                 // gobble up rest of previous input
                 sc.nextLine();
                 break;
+            case 6:
+                ATM.transferFundsAnotherAcct(user, sc);
         }
 
         // redisplay the menu unless the user wants to quit
@@ -137,6 +146,64 @@ public class ATM {
         user.printAccountsSummary(theAcct);
     }
 
+    public static void transferFundsAnotherAcct(User user, Scanner sc) {
+        // inits
+        int fromAcct;
+        String toAcct;
+        double amount;
+        double acctBal;
+        boolean existAcct = false;
+
+        //get the account to transfer from
+        do {
+            System.out.printf("Enter the number (1-%d) of the account\n" +
+                    "to transfer from: ", user.numAccounts());
+            fromAcct = sc.nextInt() - 1;
+            if (fromAcct < 0 || fromAcct >= user.numAccounts()) {
+                System.out.println("Invalid account number. Please select another");
+            }
+        } while (fromAcct < 0 || fromAcct >= user.numAccounts());
+        acctBal = user.getAccountBalance(fromAcct);
+
+        //get the account to transfer to
+        do {
+            System.out.println("Enter UUID account where you want to transfer to:\n");
+            toAcct = sc.nextLine();
+            existAcct = user.accountExistsInBank(toAcct);
+            if (!existAcct) {
+                System.out.printf("There is no such UUID %s recognized, try again", toAcct);
+            } else {
+                existAcct = true;
+            }
+            //8147652277
+        } while (!existAcct);
+
+        // get the amount to transfer
+        do {
+            System.out.printf("Enter the amount to transfer (max %.02f EUR): EUR",
+                    acctBal);
+            amount = sc.nextDouble();
+            if (amount < 0) {
+                System.out.println("Amount must be greater than 0.00 EUR");
+            } else if (amount > acctBal) {
+                System.out.printf("Amount must be less than total balance of the account ( %.02f EUR)\n", acctBal);
+            }
+        } while (amount < 0 || amount >= acctBal);
+
+
+
+        // finally, do the transfer DMS
+        //1. Credit
+        user.addAcctTransaction(fromAcct, -1 * amount, String.format(
+                "Transfer from account %s", toAcct
+        ));
+        //2. Debit
+        user.addAcctTransaction(toAcct, amount, String.format(
+                "Transfer to account %s", user.getAcctUUID(fromAcct)));
+
+    }
+
+
     /*
      * Process transferring funds from one account to another
      * @param user           the logged-in User object
@@ -164,7 +231,7 @@ public class ATM {
         // get the account to transfer to
         do {
             System.out.printf("Enter the number (1-%d) of the account\n" +
-                    "to transfer from: ", user.numAccounts());
+                    "to transfer to: ", user.numAccounts());
             toAcct = sc.nextInt() - 1;
             if (toAcct < 0 || toAcct >= user.numAccounts()) {
                 System.out.println("Invalid account number. Please select another");
@@ -243,6 +310,7 @@ public class ATM {
         user.addAcctTransaction(fromAcct, -1 * amount, memo);
 
     }
+
     /*
      * Process a fund deposit from an account
      * @param user           the logged-in User object
